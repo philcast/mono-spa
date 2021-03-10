@@ -29,7 +29,7 @@ function App() {
           Open another app instance on&nbsp;
           <a
             className="App-link"
-            href="http://localhost:3000"
+            href={window.location.origin}
             target="_blank"
             rel="noopener noreferrer"
           >
