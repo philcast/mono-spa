@@ -6,12 +6,12 @@ export type IncrementCallback = (increment: number) => void;
 
 let onIncrementCallback: IncrementCallback | undefined;
 
-export function bootstrap(rootNode: HTMLElement | null, success: () => void) {
+export function bootstrap(onPrimary: () => void, onSecondary: () => void) {
   let isPrimaryInstance = false;
 
   const timeoutId = setTimeout(() => {
       isPrimaryInstance = true;
-      success();
+      onPrimary();
     },
     INCREMENT_ACCEPTED_ACKNOWLEDGEMENT_TIMEOUT
   );
@@ -29,6 +29,7 @@ export function bootstrap(rootNode: HTMLElement | null, success: () => void) {
       case 'INCREMENT_MESSAGE': {
         bus.postMessage(new IncrementAcceptedMessage());
         console.log('Accepting increment message');
+        window.top.focus();
         onIncrementCallback && onIncrementCallback(message.value);
         
       }; break;
@@ -37,7 +38,10 @@ export function bootstrap(rootNode: HTMLElement | null, success: () => void) {
           clearTimeout(timeoutId);
           console.log('Increment accepted message received - closing');
           bus.close();
-          rootNode && insertCloseWindowScript(rootNode);
+          window.top.close(); //FIXME no more authorized by browsers
+          if (!window.closed) {
+            onSecondary();
+          }
         }
       }
     }
@@ -46,8 +50,4 @@ export function bootstrap(rootNode: HTMLElement | null, success: () => void) {
 
 export function onBootstrapIncrementMessage(callback: IncrementCallback) {
   onIncrementCallback = callback;
-}
-
-function insertCloseWindowScript(rootNode: HTMLElement) {
-  window.close(); //FIXME no more authorized by browsers
 }
